@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>FCM Notification Example</title>
+     <!-- Firebase SDKs -->
+     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+ </head>
+ <body>
+     <h1>FCM Notification Example</h1>
+     <div class="bg-white p-6 rounded shadow-md">
+        <h1 class="text-xl font-bold mb-4">FCM Push Notification</h1>
+        <input type="text" id="title" placeholder="Notification Title" class="border p-2 mb-2 w-full">
+        <input type="text" id="body" placeholder="Notification Body" class="border p-2 mb-2 w-full">
+        <button id="sendNotification" class="bg-blue-500 text-white p-2 rounded">Send Notification</button>
+    </div>
+
+     <button id="register">Register for Notifications</button>
+     <script type="module" src="script.js"></script>
+
+ 
+     <script>
+         // ✅ Correct Firebase Configuration
+         var firebaseConfig = {
+                apiKey: "AIzaSyBlyW0jeyCAibY7zTJJpkpuep3MUUo0Vp4",
+                authDomain: "my-site-b99bf.firebaseapp.com",
+                projectId: "my-site-b99bf",
+                storageBucket: "my-site-b99bf.appspot.com",
+                messagingSenderId: "716812448739",
+                appId: "1:716812448739:web:e3c45c74826985c4cd26d6",
+                measurementId: "G-QZF5K6VH5G"
+         };
+ 
+         // ✅ Initialize Firebase
+         firebase.initializeApp(firebaseConfig);
+         const messaging = firebase.messaging();
+ 
+         // ✅ Request permission and get token
+         document.getElementById('register').addEventListener('click', () => {
+             Notification.requestPermission()
+                 .then(permission => {
+                     if (permission === "granted") {
+                         console.log("Notification permission granted.");
+                         return messaging.getToken();
+                     } else {
+                         console.log("Permission denied.");
+                     }
+                 })
+                 .then(token => {
+                     console.log("FCM Token:", token);
+                     // Send the token to your server
+                     fetch('/register-token', {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                         },
+                         body: JSON.stringify({ token: token }),
+                     });
+                 })
+                 .catch(error => {
+                     console.error("Error getting permission:", error);
+                 });
+         });
+ 
+        //  // ✅ Handle incoming messages
+         messaging.onMessage(payload => {
+             console.log("Message received. ", payload);
+             const notificationTitle = payload.notification.title;
+             const notificationOptions = {
+                 body: payload.notification.body,
+                 icon: "./avatar-9.png"
+             };
+             new Notification(notificationTitle, notificationOptions);
+         });
+     </script>
+ </body>
+ </html>
+ 
